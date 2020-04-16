@@ -11,8 +11,8 @@ static const unsigned int gappov    = 15;       /* vert outer gap between window
 static const int smartgaps          = 1;        /* 1 means no outer gap when there is only one window */
 static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
-static const char *fonts[]          = { "monospace:size=10" };
-static const char dmenufont[]       = "monospace:size=10";
+static const char *fonts[]          = { "MesloLGS NF:pixelsize=16"};
+static const char dmenufont[]       = "MesloLGS NF:pixelsize=16";
 static const char col_gray1[]       = "#222222";
 static const char col_gray2[]       = "#444444";
 static const char col_gray3[]       = "#bbbbbb";
@@ -30,8 +30,8 @@ static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 static const char *upvol[]   = { "/usr/bin/pactl", "set-sink-volume", "0", "+5%",     NULL };
 static const char *downvol[] = { "/usr/bin/pactl", "set-sink-volume", "0", "-5%",     NULL };
 static const char *mutevol[] = { "/usr/bin/pactl", "set-sink-mute",   "0", "toggle",  NULL };
-static const char *downbrightness[] = { "light", "-U", "10", NULL };
-static const char *upbrightness[] = { "light", "-A", "10", NULL };
+static const char *downbrightness[] = { "light", "-U", "5", NULL };
+static const char *upbrightness[] = { "light", "-A", "5", NULL };
 
 static const Rule rules[] = {
 	/* xprop(1):
@@ -76,16 +76,17 @@ static const char *scratchpadcmd[] = { "st", "-t", scratchpadname, "-g", "120x34
 
 static Key keys[] = {
 	/* modifier                     key        function        argument */
+	{ Mod4Mask,                     XK_l,  spawn,  SHCMD("slock") },
 	{ MODKEY,                       XK_grave,  togglescratch,  {.v = scratchpadcmd } },
 	{ MODKEY,                       XK_m,      togglefullscr,  {0} },
-	{ 0,                            XF86XK_AudioLowerVolume, spawn, {.v = downvol } },
-	{ 0,                            XF86XK_AudioMute, spawn, {.v = mutevol } },
-	{ 0,                            XF86XK_AudioRaiseVolume, spawn, {.v = upvol   } },
-	{ MODKEY|ShiftMask,                            XK_Down, spawn, {.v = downbrightness   } },
-	{ MODKEY|ShiftMask,                            XK_Up, spawn, {.v = upbrightness   } },
+	{ MODKEY|ShiftMask,             XK_Left, spawn, {.v = downvol } },
+	{ MODKEY|ShiftMask,             XK_End, spawn, {.v = mutevol } },
+	{ MODKEY|ShiftMask,             XK_Right, spawn, {.v = upvol   } },
+	{ MODKEY|ShiftMask,             XK_Down, spawn, {.v = downbrightness   } },
+	{ MODKEY|ShiftMask,             XK_Up, spawn, {.v = upbrightness   } },
 	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
-	{ MODKEY|ShiftMask,                       XK_b,      togglebar,      {0} },
+	{ MODKEY|ShiftMask,             XK_b,      togglebar,      {0} },
 	{ MODKEY|ShiftMask,             XK_j,      focusstack,     {.i = +1 } },
 	{ MODKEY|ShiftMask,             XK_k,      focusstack,     {.i = -1 } },
 	{ MODKEY|ShiftMask,             XK_l,      focusstack,     {.i = +1 } },
