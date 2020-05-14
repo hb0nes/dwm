@@ -2,7 +2,7 @@
 #include <X11/XF86keysym.h>
 
 /* appearance */
-static const unsigned int borderpx  = 1;        /* border pixel of windows */
+static const unsigned int borderpx  = 5;        /* border pixel of windows */
 static const unsigned int snap      = 32;       /* snap pixel */
 static const unsigned int gappih    = 15;       /* horiz inner gap between windows */
 static const unsigned int gappiv    = 15;       /* vert inner gap between windows */
@@ -27,22 +27,19 @@ static const char scratchpadname[] = "scratchpad";
 
 /* tagging */
 static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
-static const char *upvol[]   = { "/usr/bin/pactl", "set-sink-volume", "0", "+5%",     NULL };
-static const char *downvol[] = { "/usr/bin/pactl", "set-sink-volume", "0", "-5%",     NULL };
-static const char *mutevol[] = { "/usr/bin/pactl", "set-sink-mute",   "0", "toggle",  NULL };
-static const char *downbrightness[] = { "light", "-U", "5", NULL };
-static const char *upbrightness[] = { "light", "-A", "5", NULL };
 
 static const Rule rules[] = {
 	/* xprop(1):
 	 *	WM_CLASS(STRING) = instance, class
 	 *	WM_NAME(STRING) = title
 	 */
-	/* class      instance    title       tags mask     isfloating   monitor */
-	{ "Gimp",            NULL,       NULL,       0,            1,           -1 },
-	{ "Firefox",         NULL,       NULL,       1 << 8,       0,           -1 },
-	{ "PrivMX",          NULL,       NULL,       1 << 2,       0,           -1 },
-	{ "TelegramDesktop", NULL,       NULL,       1 << 1,       0,           -1 },
+	/* class             instance    title       tags mask     isfloating   isterminal noswallow monitor */
+	{ "st",              NULL,       NULL,       0,            0,           1,         1,        -1 },
+	{ "TelegramDesktop", NULL,       NULL,       1 << 1,       0,           0,         0,        -1 },
+	{ "PrivMX",          NULL,       NULL,       1 << 2,       0,           0,         0,        -1 },
+	{ "Spotify",         NULL,       NULL,       1 << 3,       0,           0,         0,        -1 },
+	{ "discord",         NULL,       NULL,       1 << 7,       0,           0,         0,        -1 },
+	{ "Firefox",         NULL,       NULL,       1 << 8,       0,           0,         0,        -1 },
 };
 
 /* layout(s) */
@@ -60,9 +57,9 @@ static const Layout layouts[] = {
 /* key definitions */
 #define MODKEY Mod1Mask
 #define TAGKEYS(KEY,TAG) \
-	{ MODKEY,                       KEY,      view,           {.ui = 1 << TAG} }, \
+	{ MODKEY,                       KEY,      comboview,           {.ui = 1 << TAG} }, \
 	{ MODKEY|ControlMask,           KEY,      toggleview,     {.ui = 1 << TAG} }, \
-	{ MODKEY|ShiftMask,             KEY,      tag,            {.ui = 1 << TAG} }, \
+	{ MODKEY|ShiftMask,             KEY,      combotag,            {.ui = 1 << TAG} }, \
 	{ MODKEY|ControlMask|ShiftMask, KEY,      toggletag,      {.ui = 1 << TAG} },
 
 /* helper for spawning shell commands in the pre dwm-5.0 fashion */
@@ -73,9 +70,17 @@ static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() 
 static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_cyan, "-sf", col_gray4, NULL };
 static const char *termcmd[]  = { "st", NULL };
 static const char *scratchpadcmd[] = { "st", "-t", scratchpadname, "-g", "120x34", NULL };
+static const char *upvol[]   = { "pulsemixer", "--change-volume", "+5", NULL };
+static const char *downvol[]   = { "pulsemixer", "--change-volume", "-5", NULL };
+static const char *mutevol[]   = { "pulsemixer", "--toggle-mute", NULL };
+static const char *downbrightness[] = { "light", "-U", "5", NULL };
+static const char *upbrightness[] = { "light", "-A", "5", NULL };
+static const char *switchkeyboardlayout[] = { "/home/b0nes/Personal/scripts/switch-keyboard-layout.sh",  NULL };
 
 static Key keys[] = {
 	/* modifier                     key        function        argument */
+	{ MODKEY|ControlMask,           XK_space,  spawn,  {.v = switchkeyboardlayout } },
+	{ 0,                            XK_Print,  spawn,  SHCMD("flameshot gui") },
 	{ Mod4Mask,                     XK_l,  spawn,  SHCMD("slock") },
 	{ MODKEY,                       XK_grave,  togglescratch,  {.v = scratchpadcmd } },
 	{ MODKEY,                       XK_m,      togglefullscr,  {0} },
@@ -97,14 +102,14 @@ static Key keys[] = {
 	{ MODKEY,                       XK_Tab,    view,           {0} },
 	{ MODKEY|ShiftMask,             XK_c,      killclient,     {0} },
 	{ MODKEY,                       XK_t,      setlayout,      {.v = &layouts[0]} },
-	{ MODKEY|ShiftMask,             XK_f,      setlayout,      {.v = &layouts[1]} },
 	{ MODKEY,                       XK_space,  setlayout,      {0} },
 	{ MODKEY|ShiftMask,             XK_space,  togglefloating, {0} },
 	{ MODKEY,                       XK_0,      view,           {.ui = ~0 } },
 	{ MODKEY|ShiftMask,             XK_0,      tag,            {.ui = ~0 } },
-	{ MODKEY,                       XK_period, focusmon,       {.i = +1 } },
-	{ MODKEY|ShiftMask,             XK_comma,  tagmon,         {.i = -1 } },
-	{ MODKEY|ShiftMask,             XK_period, tagmon,         {.i = +1 } },
+	{ MODKEY,                       XK_comma,  focusmon,       {.i = +1 } },
+	{ MODKEY,                       XK_period, focusmon,       {.i = -1 } },
+	{ MODKEY|ShiftMask,             XK_period, tagmon,         {.i = -1 } },
+	{ MODKEY|ShiftMask,             XK_comma,  tagmon,         {.i = +1 } },
 	TAGKEYS(                        XK_1,                      0)
 	TAGKEYS(                        XK_2,                      1)
 	TAGKEYS(                        XK_3,                      2)
